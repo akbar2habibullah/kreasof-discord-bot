@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
 client.commands = new Collection();
 
@@ -50,6 +50,22 @@ client.on(Events.InteractionCreate, async interaction => {
 
 client.once(Events.ClientReady, readyClient => {
 	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+});
+
+client.on(Events.MessageCreate, async message => {
+  if (message.author.bot) return;
+
+  if (message.mentions.users.has(client.user.id)) {
+    let replyContent = message.content.replace(/<@!?\d+>/g, '').trim();
+    if (!replyContent) {
+      replyContent = "Hello!";
+    }
+    try {
+      await message.reply(replyContent);
+    } catch (error) {
+      console.error('Error sending reply:', error);
+    }
+  }
 });
 
 // Log in to Discord with your client's token
